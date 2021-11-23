@@ -1,25 +1,27 @@
 ﻿#include <iostream>
 #include <chrono>
+#include <filesystem>
 #include "Converter.h"
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
 	std::cout << "Reveares' Waypoint Converter" << std::endl << std::endl;
 
-	if (argc != 3)
+	if(argc != 2)
 	{
-		std::cerr << "2 Arguments are needed!" << std::endl << "first: path/to/file.zen" << std::endl << "second: filename.wp" << std::endl;
-		return -1;
+		std::cerr << "Usage: " << argv[0] << " path/to/file.zen\n";
+		return 1;
 	}
+	std::filesystem::path zen = argv[1];
 
 	auto start = std::chrono::high_resolution_clock::now();
 
 	Converter converter;
-	converter.read(argv[1]);
-	converter.write(argv[2]);
+	converter.read(zen.string());
+	converter.write(zen.replace_extension(".wp").string());
 
 	auto end = std::chrono::high_resolution_clock::now();
-	std::cout << "Which took " << std::chrono::duration<double>(end - start).count() << " seconds." << std::endl;
+	std::cout << "Which took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms.\n";
 
 	return 0;
 }
