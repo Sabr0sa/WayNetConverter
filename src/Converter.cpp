@@ -21,9 +21,21 @@ void Converter::read(const std::string fileName)
 	std::vector<Way> wayl;
 	std::vector<Way> wayr;
 
+	// skip the first 3 lines to get to the file format description
+	file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+	std::string line;
+	file >> line;
+	if(line != "ASCII")
+	{
+		std::cerr << "Can't read binary .zen files (yet)! Please use an ASCII version.\n";
+		exit(1);
+	}
+
 	// Skip until '[WayNet' tag.
 	bool foundWayNet = false;
-	std::string line;
 	while (std::getline(file, line))
 	{
 		if (!foundWayNet)
