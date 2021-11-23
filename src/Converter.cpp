@@ -173,7 +173,7 @@ void Converter::readZen(std::string_view fileName)
 
 std::vector<std::string> Converter::split(const std::string& line) const
 {
-	std::istringstream iss{line.c_str()};
+	std::istringstream iss{line};
 	return {std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
 }
 
