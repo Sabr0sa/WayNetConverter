@@ -5,9 +5,9 @@
 #include <sstream>
 #include <iterator>
 
-void Converter::read(const std::string fileName)
+void Converter::read(std::string_view fileName)
 {
-	std::ifstream file(fileName, std::ifstream::binary);
+	std::ifstream file(fileName.data(), std::ifstream::binary);
 
 	std::cout << "Read file: " << fileName << std::endl;
 	if (!file.is_open())
@@ -193,13 +193,13 @@ void Converter::read(const std::string fileName)
 	std::cout << "Done. Waypoints: " << waypoints.size() << " and Ways: " << wayl.size() << std::endl;
 }
 
-std::vector<std::string> Converter::split(const std::string line) const
+std::vector<std::string> Converter::split(const std::string& line) const
 {
 	std::istringstream iss(line);
-	return { std::istream_iterator<std::string>{ iss }, std::istream_iterator<std::string>{} };
+	return {std::istream_iterator<std::string>{ iss }, std::istream_iterator<std::string>{}};
 }
 
-void Converter::write(const std::string fileName) const
+void Converter::write(std::string_view fileName) const
 {
 	if (waypoints.size() == 0)
 	{
@@ -207,7 +207,7 @@ void Converter::write(const std::string fileName) const
 		return;
 	}
 
-	std::ofstream file(fileName);
+	std::ofstream file(fileName.data());
 
 	std::cout << std::endl << "Write file: " << fileName << std::endl;
 	if (!file.is_open())
