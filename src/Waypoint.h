@@ -1,16 +1,26 @@
 #pragma once
+
+#include <utility>
 #include <string>
 #include <vector>
 #include <memory>
+#include "Math.h"
 
 struct Waypoint
 {
-	Waypoint(std::string name, double x, double y, double z, double dX, double dZ)
-		: name(name), x(x), y(y), z(z), dX(dX), dZ(dZ) {}
+	Waypoint() = default;
+	Waypoint(std::string name, vec3 pos, float dX, float dZ)
+		: name(std::move(name)),
+		pos(pos),
+		dX(dX),
+		dZ(dZ)
+	{
+	}
 
 	std::string name;
-	double x, y, z;
-	double dX, dZ;
+	vec3 pos;
+	float dX = 0;
+	float dZ = 0;
 	std::vector<std::string> connections;
 };
 

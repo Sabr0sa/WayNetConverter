@@ -1,11 +1,11 @@
-﻿#include <iostream>
+#include <iostream>
 #include <chrono>
 #include <filesystem>
 #include "Converter.h"
 
 int main(int argc, char *argv[])
 {
-	std::cout << "Reveares' Waypoint Converter" << std::endl << std::endl;
+	std::cout << "Reveares' Waypoint Converter v1.1 (improved by Sabrosa)\n\n";
 
 	if(argc != 2)
 	{
@@ -17,8 +17,9 @@ int main(int argc, char *argv[])
 	auto start = std::chrono::high_resolution_clock::now();
 
 	Converter converter;
-	converter.read(zen.string());
-	converter.write(zen.replace_extension(".wp").string());
+	converter.readZen(zen.string());
+	converter.writeWp(zen.replace_extension(".wp").string());
+	converter.writeFp(zen.replace_extension(".fp").string());
 
 	auto end = std::chrono::high_resolution_clock::now();
 	std::cout << "Which took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms.\n";
