@@ -45,7 +45,7 @@ void Converter::read(const std::string fileName)
 			std::shared_ptr<Waypoint> waypoint;
 
 			// Create a new Waypoint if this line is not a reference.
-			if (line.find("§") == std::string::npos)
+			if(line.find("\247") == std::string::npos) // §
 			{
 				std::string attribute;
 				size_t location;
@@ -106,7 +106,7 @@ void Converter::read(const std::string fileName)
 				waypoint = std::make_shared<Waypoint>(name, x, y, z, dX, dZ);
 				waypoints[objectId] = waypoint;
 			}
-			
+
 			// Don't create a Way for Waypoints.
 			if (line.find("[waypoint") == std::string::npos)
 			{
