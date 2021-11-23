@@ -7,7 +7,7 @@
 
 void Converter::read(std::string_view fileName)
 {
-	std::ifstream file(fileName.data(), std::ifstream::binary);
+	std::ifstream file(fileName.data(), std::ios::binary);
 
 	std::cout << "Read file: " << fileName << std::endl;
 	if (!file.is_open())
@@ -207,7 +207,7 @@ void Converter::write(std::string_view fileName) const
 		return;
 	}
 
-	std::ofstream file(fileName.data());
+	std::ofstream file(fileName.data(), std::ios::binary); // don't convert \n to \r\n on Windows
 
 	std::cout << std::endl << "Write file: " << fileName << std::endl;
 	if (!file.is_open())
