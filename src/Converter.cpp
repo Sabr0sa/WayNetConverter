@@ -16,7 +16,7 @@ void Converter::readZen(std::string_view fileName)
 		std::cerr << "Couldn't open file!\n";
 		return;
 	}
-	std::cout << "Reading ...";
+	std::cout << "Reading ... ";
 
 	// Connections.
 	std::vector<Way> wayl;
@@ -28,7 +28,7 @@ void Converter::readZen(std::string_view fileName)
 	file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
 	std::string line;
-	file >> line;
+	file >> line >> std::ws; // consume EOL to prevent empty lines read by std::getline()
 	if(line != "ASCII")
 	{
 		std::cerr << "Can't read binary .zen files (yet)! Please use an ASCII version.\n";
@@ -61,34 +61,29 @@ void Converter::readZen(std::string_view fileName)
 				file >> fp.pos.x >> fp.pos.y >> fp.pos.z;
 				// skip to the name
 				file.ignore(std::numeric_limits<std::streamsize>::max(), ':');
-				file >> fp.name;
+				file >> fp.name >> std::ws; // consume EOL to prevent empty lines read by std::getline()
 			}
 		}
 		else if(line.find("[way") != std::string::npos)
 		{
-			// Get object id.
-			auto vector = split(line);
-			if(vector.size() != 4)
-			{
-				std::cerr << "Too many split result (" << vector.size() << ") instead of 3 from line:\n'" << line << "'\n";
-				return;
-			}
-			vector[3].erase(vector[3].end() - 1);  // Remove ']'.
-			int objectId = std::stoi(vector[3]);
+			std::istringstream iss{line};
+			std::string type;
+			[[maybe_unused]] std::string unused;
+			std::string refMarker;
+			int objectId;
+			iss >> type >> refMarker >> unused >> objectId >> unused;
 
 			std::shared_ptr<Waypoint> waypoint;
 
 			// Create a new Waypoint if this line is not a reference.
-			if(line.find("\247") == std::string::npos) // §
+			if(refMarker != "\247") // §
 			{
 				waypoint = std::make_shared<Waypoint>();
 				waypoints.emplace(objectId, waypoint);
 
 				// skip to the name
 				file.ignore(std::numeric_limits<std::streamsize>::max(), ':');
-				file >> waypoint->name;
-				// jump to the next line
-				file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+				file >> waypoint->name >> std::ws; // consume EOL and jump to the next line
 				// skip waterDepth and underWater
 				file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 				file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -98,16 +93,19 @@ void Converter::readZen(std::string_view fileName)
 				// skip to the direction
 				file.ignore(std::numeric_limits<std::streamsize>::max(), ':');
 				[[maybe_unused]] float dY;
-				file >> waypoint->dX >> dY >> waypoint->dZ;
+				file >> waypoint->dX >> dY >> waypoint->dZ >> std::ws; // consume EOL to prevent empty lines read by std::getline()
 			}
 
 			// Don't create a Way for Waypoints.
-			if(line.find("[waypoint") == std::string::npos)
+			std::string_view tag_waypoint = "[waypoint";
+			if(type.compare(0, tag_waypoint.length(), tag_waypoint) != 0)
 			{
-				Way way{ objectId, waypoint };
-				if(line.find("[wayl") != std::string::npos)
+				Way way{objectId, waypoint};
+				std::string_view tag_wayl = "[wayl";
+				std::string_view tag_wayr = "[wayr";
+				if(type.compare(0, tag_wayl.length(), tag_wayl) == 0)
 					wayl.push_back(way);
-				else if(line.find("[wayr") != std::string::npos)
+				else if(type.compare(0, tag_wayr.length(), tag_wayr) == 0)
 					wayr.push_back(way);
 
 				// After a left Way there must be a right Way. The difference should never be higher than 1.
@@ -168,13 +166,7 @@ void Converter::readZen(std::string_view fileName)
 		}
 	}
 
-	std::cout << " Done.\nFreepoints: " << freepoints.size() << "; Waypoints: " << waypoints.size() << "; Ways: " << wayl.size() << '\n';
-}
-
-std::vector<std::string> Converter::split(const std::string& line) const
-{
-	std::istringstream iss{line};
-	return {std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
+	std::cout << "Done.\nFreepoints: " << freepoints.size() << "; Waypoints: " << waypoints.size() << "; Ways: " << wayl.size() << '\n';
 }
 
 void Converter::writeWp(std::string_view fileName) const
@@ -191,7 +183,7 @@ void Converter::writeWp(std::string_view fileName) const
 		std::cerr << "Couldn't open file!\n";
 		return;
 	}
-	std::cout << "Writing ...";
+	std::cout << "Writing ... ";
 
 	for(const auto& wp : waypoints)
 	{
@@ -202,7 +194,7 @@ void Converter::writeWp(std::string_view fileName) const
 		file << '\n';
 	}
 
-	std::cout << " Done.\n";
+	std::cout << "Done.\n";
 }
 
 void Converter::writeFp(std::string_view fileName) const
@@ -219,10 +211,16 @@ void Converter::writeFp(std::string_view fileName) const
 		std::cerr << "Couldn't open file!\n";
 		return;
 	}
-	std::cout << "Writing ...";
+	std::cout << "Writing ... ";
 
 	for(const auto& fp : freepoints)
 		file << fp.name << ";" << fp.pos.x << ";" << fp.pos.y << ";" << fp.pos.z << ";" << fp.dX << ";" << fp.dZ << '\n';
 
-	std::cout << " Done.\n";
+	std::cout << "Done.\n";
+}
+
+std::vector<std::string> Converter::split(const std::string& line) const
+{
+	std::istringstream iss{line};
+	return {std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
 }
