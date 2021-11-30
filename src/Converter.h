@@ -14,7 +14,8 @@ public:
 	void writeFp(std::string_view fileName) const;
 
 private:
-	std::vector<std::string> split(const std::string& line) const;
+	static std::vector<std::string> split(const std::string& line);
+	static bool hexstr2float(const char *str, float& ret);
 
 	std::map<int, std::shared_ptr<Waypoint>> waypoints;
 	std::vector<Freepoint> freepoints;

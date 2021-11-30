@@ -8,15 +8,6 @@
 
 struct Waypoint
 {
-	Waypoint() = default;
-	Waypoint(std::string name, vec3 pos, float dX, float dZ)
-		: name(std::move(name)),
-		pos(pos),
-		dX(dX),
-		dZ(dZ)
-	{
-	}
-
 	std::string name;
 	vec3 pos;
 	float dX = 0;

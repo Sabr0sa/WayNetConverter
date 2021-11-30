@@ -1,6 +1,9 @@
 #include "Converter.h"
+#include <cstdint>
 #include <limits>
 #include <iterator>
+#include <algorithm>
+#include <charconv>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -53,8 +56,12 @@ void Converter::readZen(std::string_view fileName)
 				file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 				file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-				// TODO: extract rotation and convert it to GMP angle
-				file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+				// skip to the direction
+				file.ignore(std::numeric_limits<std::streamsize>::max(), ':');
+				char hexfloats[9 * 8 + 1] = {'\0'};
+				file.get(hexfloats, std::size(hexfloats));
+				hexstr2float(hexfloats, fp.dX);
+				hexstr2float(hexfloats + 16, fp.dZ);
 
 				// skip to the position
 				file.ignore(std::numeric_limits<std::streamsize>::max(), ':');
@@ -219,8 +226,19 @@ void Converter::writeFp(std::string_view fileName) const
 	std::cout << "Done.\n";
 }
 
-std::vector<std::string> Converter::split(const std::string& line) const
+std::vector<std::string> Converter::split(const std::string& line)
 {
 	std::istringstream iss{line};
 	return {std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>{}};
+}
+
+bool Converter::hexstr2float(const char *str, float& ret)
+{
+	static_assert(sizeof(float) == sizeof(uint32_t));
+	uint32_t dummy = 0;
+	if(std::from_chars(str, str + sizeof(float) * 2, dummy, 16).ec != std::errc{})
+		return false;
+	// Gothic writes floats with LSB first, but std::from_chars() interprets them with MSB first, so we have to swap the bytes
+	std::reverse_copy((uint8_t*)&dummy, (uint8_t*)&dummy + sizeof(float), (uint8_t*)&ret);
+	return true;
 }

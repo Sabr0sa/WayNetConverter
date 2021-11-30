@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-	std::cout << "Reveares' Waypoint Converter v1.1 (improved by Sabrosa)\n\n";
+	std::cout << "Reveares' Waypoint Converter v1.2 (improved by Sabrosa)\n\n";
 
 	if(argc != 2)
 	{
